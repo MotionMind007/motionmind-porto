@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MotionMind — Admin Panel</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,300&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --b0:#02020a;--b1:#050512;--b2:#08081c;--b3:#0d0d28;
+  --blue:#2563EB;--purple:#7C3AED;--cyan:#22d3ee;--violet:#a78bfa;
+  --g1:linear-gradient(135deg,#2563EB,#7C3AED);
+  --text:#eef2ff;--muted:#5b6898;--dim:#151530;
+  --border:rgba(37,99,235,.12);
+  --danger:#ef4444;
+  --success:#4ade80;
+}
+html{font-size:14px;scroll-behavior:smooth}
+body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh}
+
+/* ══ LAYOUT ══ */
+.admin-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+
+/* ══ SIDEBAR ══ */
+.sidebar{background:var(--b1);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 20px 24px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.sidebar-logo-ico{width:32px;height:32px;border-radius:8px;background:var(--g1);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.7rem;color:#fff}
+.sidebar-logo span{font-weight:800;font-size:.95rem}
+.sidebar-logo em{font-style:normal;font-size:.6rem;color:var(--muted);display:block;font-family:'JetBrains Mono',monospace}
+
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;padding:0 10px}
+.sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-size:.82rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;text-decoration:none;border:none;background:none;width:100%;text-align:left}
+.sidebar-link:hover{color:var(--text);background:rgba(37,99,235,.06)}
+.sidebar-link.active{color:var(--text);background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.15)}
+.sidebar-link svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0}
+
+.sidebar-divider{height:1px;background:var(--border);margin:16px 10px}
+
+.sidebar-back{display:flex;align-items:center;gap:8px;padding:10px 14px;margin:0 10px;border-radius:8px;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;text-decoration:none;font-family:'JetBrains Mono',monospace}
+.sidebar-back:hover{color:var(--cyan);background:rgba(34,211,238,.06)}
+
+/* ══ MAIN CONTENT ══ */
+.admin-main{padding:32px 40px;overflow-y:auto}
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+.admin-header h1{font-size:1.6rem;font-weight:900;letter-spacing:-1px}
+.admin-header-actions{display:flex;gap:10px}
+
+/* ══ CARDS ══ */
+.admin-card{background:var(--b1);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
+.admin-card h3{font-size:1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.admin-card h3 .card-badge{font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:2px 8px;border-radius:4px;background:rgba(37,99,235,.08);color:var(--cyan);border:1px solid rgba(37,99,235,.18)}
+
+/* ══ FORM ══ */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-row.full{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.form-group input,.form-group textarea,.form-group select{
+  background:var(--b2);border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.78rem;
+  transition:border-color .2s;outline:none;resize:vertical;
+}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:rgba(37,99,235,.5)}
+.form-group textarea{min-height:80px}
+.form-group select{cursor:pointer}
+.form-group select option{background:var(--b2);color:var(--text)}
+
+/* ══ BUTTONS ══ */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;transition:all .2s;border:none}
+.btn-primary{background:var(--g1);color:#fff}
+.btn-primary:hover{box-shadow:0 6px 20px rgba(37,99,235,.4);transform:translateY(-1px)}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--danger);border:1px solid rgba(239,68,68,.2)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:rgba(37,99,235,.3);color:var(--text)}
+.btn-success{background:rgba(74,222,128,.1);color:var(--success);border:1px solid rgba(74,222,128,.2)}
+.btn-success:hover{background:rgba(74,222,128,.2)}
+
+/* ══ TABLE ══ */
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+.admin-table td{padding:12px 14px;border-bottom:1px solid rgba(37,99,235,.05);font-size:.82rem}
+.admin-table tr:hover td{background:rgba(37,99,235,.03)}
+.admin-table .actions{display:flex;gap:6px}
+
+/* ══ BADGE ══ */
+.badge{font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:3px 8px;border-radius:4px;display:inline-block}
+.badge-web{background:rgba(37,99,235,.08);color:#93c5fd;border:1px solid rgba(37,99,235,.18)}
+.badge-ai{background:rgba(124,58,237,.08);color:#c4b5fd;border:1px solid rgba(124,58,237,.18)}
+.badge-auto{background:rgba(34,211,238,.08);color:#67e8f9;border:1px solid rgba(34,211,238,.18)}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;top:20px;right:20px;padding:14px 20px;border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:.75rem;z-index:9999;animation:toastIn .3s ease;display:none}
+.toast.show{display:flex;align-items:center;gap:8px}
+.toast-success{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:var(--success)}
+.toast-error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--danger)}
+@keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ TOGGLE ══ */
+.toggle-wrap{display:flex;align-items:center;gap:10px}
+.toggle{position:relative;width:44px;height:24px;border-radius:12px;background:var(--dim);border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.toggle.on{background:rgba(37,99,235,.3);border-color:rgba(37,99,235,.5)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:all .2s}
+.toggle.on::after{left:23px;background:var(--blue)}
+
+/* ══ TABS ══ */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ══ EMPTY STATE ══ */
+.empty-state{text-align:center;padding:40px;color:var(--muted)}
+.empty-state svg{width:48px;height:48px;stroke:var(--muted);margin-bottom:12px;opacity:.4}
+.empty-state p{font-size:.82rem;margin-top:8px}
+
+/* ══ MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(2,2,10,.85);z-index:9000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.modal-overlay.show{display:flex}
+.modal{background:var(--b1);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto}
+.modal h3{font-size:1.1rem;font-weight:800;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<div class="admin-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-ico">MM</div>
+      <div><span>MotionMind</span><em>Admin Panel</em></div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="sidebar-link active" data-tab="dashboard">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </button>
+      <button class="sidebar-link" data-tab="profile">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </button>
+      <button class="sidebar-link" data-tab="projects">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Projects
+      </button>
+      <button class="sidebar-link" data-tab="services">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        Services
+      </button>
+      <button class="sidebar-link" data-tab="settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15 1.65 1.65 0 003.17 14H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68 1.65 1.65 0 0010 3.17V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Settings
+      </button>
+    </nav>
+    <div class="sidebar-divider"></div>
+    <a class="sidebar-back" href="index.html">← Back to Portfolio</a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <!-- ═══ DASHBOARD TAB ═══ -->
+    <div class="tab-content active" id="tab-dashboard">
+      <div class="admin-header">
+        <h1>Dashboard</h1>
+        <div class="admin-header-actions">
+          <button class="btn btn-ghost" onclick="exportData()">↓ Export Data</button>
+          <button class="btn btn-primary" onclick="document.getElementById('import-input').click()">↑ Import Data</button>
+          <input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(event)">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px" id="dashboard-stats"></div>
+      <div class="admin-card">
+        <h3>Quick Actions</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="switchTab('projects')">+ Add Project</button>
+          <button class="btn btn-ghost" onclick="switchTab('services')">+ Add Service</button>
+          <button class="btn btn-ghost" onclick="switchTab('profile')">Edit Profile</button>
+          <button class="btn btn-danger" onclick="confirmReset()">Reset All Data</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PROFILE TAB ═══ -->
+    <div class="tab-content" id="tab-profile">
+      <div class="admin-header"><h1>Profile Settings</h1></div>
+      <form id="profile-form" onsubmit="saveProfile(event)">
+        <div class="admin-card">
+          <h3>Basic Info</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Name</label><input type="text" id="pf-name"></div>
+            <div class="form-group"><label>Location</label><input type="text" id="pf-location"></div>
+          </div>
+          <div class="form-row full">
+            <div class="form-group"><label>Description</label><textarea id="pf-description"></textarea></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Timezone</label><input type="text" id="pf-timezone"></div>
+            <div class="form-group"><label>Specialties (comma separated)</label><input type="text" id="pf-specialties"></div>
+          </div>
+          <div class="toggle-wrap" style="margin-top:10px">
+            <div class="toggle" id="pf-available" onclick="this.classList.toggle('on')"></div>
+            <span style="font-size:.78rem;color:var(--muted)">Available for work</span>
+          </div>
+        </div>
+        <div class="admin-card">
+          <h3>Contact Details</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Email</label><input type="email" id="pf-email"></div>
+            <div class="form-group"><label>WhatsApp Number</label><input type="text" id="pf-whatsapp"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>WhatsApp Link</label><input type="url" id="pf-whatsappLink"></div>
+            <div class="form-group"><label>GitHub Username</label><input type="text" id="pf-github"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>GitHub Link</label><input type="url" id="pf-githubLink"></div>
+            <div class="form-group"><label>Instagram Handle</label><input type="text" id="pf-instagram"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Instagram Link</label><input type="url" id="pf-instagramLink"></div>
+            <div class="form-group"></div>
+          </div>
+        </div>
+        <div class="admin-card">
+          <h3>Stats</h3>
+          <div class="form-row">
+            <div class="form-group"><label>Projects Count</label><input type="text" id="pf-stat-projects"></div>
+            <div class="form-group"><label>Automations</label><input type="text" id="pf-stat-automations"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Years Experience</label><input type="text" id="pf-stat-years"></div>
+            <div class="form-group"><label>Committed</label><input type="text" id="pf-stat-committed"></div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Profile</button>
+      </form>
+    </div>
+
+    <!-- ═══ PROJECTS TAB ═══ -->
+    <div class="tab-content" id="tab-projects">
+      <div class="admin-header">
+        <h1>Projects</h1>
+        <button class="btn btn-primary" onclick="openProjectModal()">+ Add Project</button>
+      </div>
+      <div class="admin-card">
+        <table class="admin-table">
+          <thead><tr><th>#</th><th>Title</th><th>Tech</th><th>Badge</th><th>Actions</th></tr></thead>
+          <tbody id="projects-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ SERVICES TAB ═══ -->
+    <div class="tab-content" id="tab-services">
+      <div class="admin-header">
+        <h1>Services</h1>
+        <button class="btn btn-primary" onclick="openServiceModal()">+ Add Service</button>
+      </div>
+      <div class="admin-card">
+        <table class="admin-table">
+          <thead><tr><th>#</th><th>Title</th><th>Description</th><th>Tags</th><th>Actions</th></tr></thead>
+          <tbody id="services-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS TAB ═══ -->
+    <div class="tab-content" id="tab-settings">
+      <div class="admin-header"><h1>Settings</h1></div>
+      <div class="admin-card">
+        <h3>Marquee Texts</h3>
+        <div class="form-row full">
+          <div class="form-group"><label>Row 1 (comma separated)</label><input type="text" id="st-marquee1"></div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group"><label>Row 2 (comma separated)</label><input type="text" id="st-marquee2"></div>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:10px">Save Marquee</button>
+      </div>
+      <div class="admin-card">
+        <h3>Tech Stack</h3>
+        <div class="form-row full">
+          <div class="form-group"><label>Technologies (comma separated)</label><input type="text" id="st-techstack"></div>
+        </div>
+        <button class="btn btn-primary" onclick="saveTechStack()" style="margin-top:10px">Save Tech Stack</button>
+      </div>
+      <div class="admin-card">
+        <h3>Danger Zone</h3>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px">Reset all data back to defaults. This cannot be undone.</p>
+        <button class="btn btn-danger" onclick="confirmReset()">Reset All Data to Defaults</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="data.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
