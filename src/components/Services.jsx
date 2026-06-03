@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Layout, Layers, Workflow, Bot } from 'lucide-react'
 import { SectionHeader } from './Section'
-import { services } from '../data'
+import { getData } from '../data'
 
 const icons = { Layout, Layers, Workflow, Bot }
 
@@ -13,6 +13,7 @@ const colorMap = {
 }
 
 export default function Services() {
+  const { services } = getData()
   return (
     <section id="services" className="py-24 px-6">
       <div className="max-w-6xl mx-auto">

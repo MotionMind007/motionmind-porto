@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
-import { techStack } from '../data'
+import { getData } from '../data'
 
 export default function About() {
+  const { techStack } = getData()
   return (
     <section id="about" className="py-24 px-6 border-t border-white/5">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">

@@ -1,6 +1,7 @@
-import { marqueeItems } from '../data'
+import { getData } from '../data'
 
 export default function Marquee() {
+  const { marqueeItems } = getData()
   const items = [...marqueeItems, ...marqueeItems]
   return (
     <div className="border-y border-white/5 bg-dark-200/50 py-3 overflow-hidden">

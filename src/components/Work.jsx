@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { SectionHeader } from './Section'
-import { projects } from '../data'
+import { getData } from '../data'
 
 const badgeColor = {
   blue: 'bg-brand-blue/10 text-brand-blue border-brand-blue/20',
@@ -10,6 +10,7 @@ const badgeColor = {
 }
 
 export default function Work() {
+  const { projects } = getData()
   return (
     <section id="work" className="py-24 px-6">
       <div className="max-w-6xl mx-auto">

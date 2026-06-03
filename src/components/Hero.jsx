@@ -2,7 +2,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import { Monitor, MessageSquare, ArrowRight, ArrowUpRight } from 'lucide-react'
 import ParticleField from './ParticleField'
-import { profile } from '../data'
+import { getData } from '../data'
 
 const container = {
   hidden: {},
@@ -16,6 +16,7 @@ const item = {
 const variantClass = { gradient: 'text-gradient', green: 'text-gradient-green' }
 
 export default function Hero() {
+  const { profile } = getData()
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const orbY = useTransform(scrollYProgress, [0, 1], [0, -120])

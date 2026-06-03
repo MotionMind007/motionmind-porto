@@ -1,15 +1,19 @@
 import { motion } from 'framer-motion'
 import { Mail, MessageCircle, Github, Instagram } from 'lucide-react'
-import { profile } from '../data'
+import { getData } from '../data'
 
-const contacts = [
-  { label: 'Email', value: 'motionmind007', href: `mailto:${profile.email}`, Icon: Mail, color: 'text-brand-blue', hover: 'hover:border-brand-blue/30 group-hover:text-brand-blue' },
-  { label: 'WhatsApp', value: '+62 852-4484', href: profile.whatsappLink, Icon: MessageCircle, color: 'text-brand-green', hover: 'hover:border-brand-green/30 group-hover:text-brand-green' },
-  { label: 'GitHub', value: profile.github, href: profile.githubLink, Icon: Github, color: 'text-brand-purple', hover: 'hover:border-brand-purple/30 group-hover:text-brand-purple' },
-  { label: 'Instagram', value: profile.instagram, href: profile.instagramLink, Icon: Instagram, color: 'text-brand-pink', hover: 'hover:border-brand-pink/30 group-hover:text-brand-pink' },
-]
+function getContacts(profile) {
+  return [
+    { label: 'Email', value: 'motionmind007', href: `mailto:${profile.email}`, Icon: Mail, color: 'text-brand-blue', hover: 'hover:border-brand-blue/30 group-hover:text-brand-blue' },
+    { label: 'WhatsApp', value: profile.whatsapp, href: profile.whatsappLink, Icon: MessageCircle, color: 'text-brand-green', hover: 'hover:border-brand-green/30 group-hover:text-brand-green' },
+    { label: 'GitHub', value: profile.github, href: profile.githubLink, Icon: Github, color: 'text-brand-purple', hover: 'hover:border-brand-purple/30 group-hover:text-brand-purple' },
+    { label: 'Instagram', value: profile.instagram, href: profile.instagramLink, Icon: Instagram, color: 'text-brand-pink', hover: 'hover:border-brand-pink/30 group-hover:text-brand-pink' },
+  ]
+}
 
 export default function Contact() {
+  const { profile } = getData()
+  const contacts = getContacts(profile)
   return (
     <section id="contact" className="py-24 px-6 border-t border-white/5">
       <div className="max-w-6xl mx-auto">
