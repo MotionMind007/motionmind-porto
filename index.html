@@ -60,11 +60,11 @@
 }
 </script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,300&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --b0:#02020a;--b1:#050512;--b2:#08081c;--b3:#0d0d28;
-  --blue:#2563EB;--purple:#7C3AED;--cyan:#22d3ee;--violet:#a78bfa;
+  --blue:#2563EB;--purple:#7C3AED;--cyan:#22d3ee;--violet:#a78bfa;--green:#22C55E;
   --g1:linear-gradient(135deg,#2563EB,#7C3AED);
   --g2:linear-gradient(90deg,#22d3ee,#2563EB,#7C3AED,#a78bfa);
   --g3:linear-gradient(135deg,rgba(37,99,235,.15),rgba(124,58,237,.15));
@@ -72,7 +72,7 @@
   --border:rgba(37,99,235,.12);
 }
 html{font-size:13px;scroll-behavior:smooth}
-body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;overflow-x:hidden;cursor:none}
+body{background:var(--b0);color:var(--text);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;cursor:none}
 
 /* ══ CURSOR ══ */
 #cur-outer{position:fixed;pointer-events:none;z-index:9999;top:0;left:0}
@@ -101,8 +101,8 @@ nav{position:sticky;top:0;z-index:500;height:56px;display:flex;align-items:cente
 .nav-avail{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#4ade80;background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.18);padding:4px 11px;border-radius:100px}
 .nav-avail-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:gPulse 2s ease-in-out infinite}
 @keyframes gPulse{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.5)}60%{box-shadow:0 0 0 6px transparent}}
-.nav-hire{font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;padding:7px 20px;border-radius:8px;cursor:pointer;color:#fff;border:none;background:var(--g1);position:relative;overflow:hidden;transition:all .22s}
-.nav-hire:hover{box-shadow:0 6px 24px rgba(37,99,235,.5);transform:translateY(-1px)}
+.nav-hire{font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;padding:7px 20px;border-radius:8px;cursor:pointer;color:#fff;border:none;background:var(--green);position:relative;overflow:hidden;transition:all .22s}
+.nav-hire:hover{box-shadow:0 6px 24px rgba(34,197,94,.4);transform:translateY(-1px)}
 
 /* ══ HERO ══ */
 .hero{position:relative;min-height:600px;overflow:hidden;display:grid;grid-template-columns:1fr 400px;align-items:center;padding:0 36px;gap:20px}
@@ -124,11 +124,11 @@ nav{position:sticky;top:0;z-index:500;height:56px;display:flex;align-items:cente
 .spec-tag{font-family:'JetBrains Mono',monospace;font-size:.58rem;padding:3px 9px;border-radius:4px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);color:var(--violet)}
 .hero-desc{font-size:.9rem;color:var(--muted);line-height:1.8;max-width:440px;margin-bottom:34px;animation:slideIn .6s .4s both}
 .hero-btns{display:flex;gap:10px;animation:slideIn .6s .46s both}
-.h-btn-p{display:flex;align-items:center;gap:7px;padding:12px 26px;border-radius:9px;background:var(--g1);color:#fff;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .25s;overflow:hidden;position:relative}
+.h-btn-p{display:flex;align-items:center;gap:7px;padding:12px 26px;border-radius:9px;background:var(--g1);color:#fff;border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .25s;overflow:hidden;position:relative}
 .h-btn-p::after{content:'';position:absolute;top:-50%;left:-80%;width:50%;height:200%;background:rgba(255,255,255,.12);transform:skewX(-20deg);transition:left .5s}
 .h-btn-p:hover::after{left:160%}
 .h-btn-p:hover{box-shadow:0 10px 36px rgba(37,99,235,.45);transform:translateY(-2px)}
-.h-btn-g{display:flex;align-items:center;gap:7px;padding:12px 22px;border-radius:9px;background:transparent;color:var(--muted);border:1px solid var(--dim);font-family:'Syne',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer;transition:all .25s}
+.h-btn-g{display:flex;align-items:center;gap:7px;padding:12px 22px;border-radius:9px;background:transparent;color:var(--muted);border:1px solid var(--dim);font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer;transition:all .25s}
 .h-btn-g:hover{border-color:rgba(124,58,237,.5);color:var(--violet)}
 
 /* hero right */
