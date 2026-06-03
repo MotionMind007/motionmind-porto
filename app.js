@@ -1,6 +1,23 @@
 // ══ MOTIONMIND PORTFOLIO — Dynamic Renderer ══
 
 (function() {
+  // ═══ XSS SANITIZATION ═══
+  function esc(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+  }
+
+  function escUrl(url) {
+    if (!url) return '#';
+    const str = String(url).trim();
+    if (str.startsWith('mailto:') || str.startsWith('https://') || str.startsWith('http://') || str.startsWith('tel:')) {
+      return esc(str);
+    }
+    return '#';
+  }
+
   const data = DataManager.getAll();
   const profile = data.profile;
   const projects = data.projects;
@@ -16,7 +33,7 @@
 
   // Hero specialties
   const specsEl = document.getElementById('hero-specs');
-  specsEl.innerHTML = profile.specialties.map(s => `<span class="spec-tag">${s}</span>`).join('');
+  specsEl.innerHTML = profile.specialties.map(s => `<span class="spec-tag">${esc(s)}</span>`).join('');
 
   // Orb stats
   const statsEl = document.getElementById('orb-stats');
@@ -27,14 +44,14 @@
     { key: 'committed', label: 'committed' }
   ];
   statsEl.innerHTML = statsMap.map(s =>
-    `<div class="oc-stat"><div class="oc-num">${profile.stats[s.key]}</div><div class="oc-lbl">${s.label}</div></div>`
+    `<div class="oc-stat"><div class="oc-num">${esc(profile.stats[s.key])}</div><div class="oc-lbl">${esc(s.label)}</div></div>`
   ).join('');
 
   // ═══ MARQUEE ═══
   const mq1 = data.marquee1 || DEFAULT_DATA.marquee1;
   const mq2 = data.marquee2 || DEFAULT_DATA.marquee2;
-  document.getElementById('mq1').innerHTML = [...mq1,...mq1,...mq1,...mq1].map(i => `<span class="mq-item">${i}<span class="mq-dot"></span></span>`).join('');
-  document.getElementById('mq2').innerHTML = [...mq2,...mq2,...mq2,...mq2].map(i => `<span class="mq-item">${i}<span class="mq-dot"></span></span>`).join('');
+  document.getElementById('mq1').innerHTML = [...mq1,...mq1,...mq1,...mq1].map(i => `<span class="mq-item">${esc(i)}<span class="mq-dot"></span></span>`).join('');
+  document.getElementById('mq2').innerHTML = [...mq2,...mq2,...mq2,...mq2].map(i => `<span class="mq-item">${esc(i)}<span class="mq-dot"></span></span>`).join('');
 
   // ═══ SERVICES BENTO ═══
   const bentoEl = document.getElementById('bento-grid');
@@ -42,26 +59,31 @@
     cyan: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`,
     violet: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--violet)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`
   };
-  bentoEl.innerHTML = services.map(s => `
-    <div class="bc sp${s.span}">
-      <div class="bc-n">${s.number} ——</div>
-      <div class="bc-ico">${serviceIcons[s.iconColor] || serviceIcons.cyan}</div>
-      <h3>${s.title}</h3>
-      <p>${s.description}</p>
-      <div class="bc-tags">${s.tags.map(t => `<span class="bc-tag">${t}</span>`).join('')}</div>
-    </div>
-  `).join('');
+  bentoEl.innerHTML = services.map(s => {
+    const icon = serviceIcons[s.iconColor] || serviceIcons.cyan;
+    return `
+    <div class="bc sp${s.span === 7 ? 7 : 5}">
+      <div class="bc-n">${esc(s.number)} ——</div>
+      <div class="bc-ico">${icon}</div>
+      <h3>${esc(s.title)}</h3>
+      <p>${esc(s.description)}</p>
+      <div class="bc-tags">${(s.tags||[]).map(t => `<span class="bc-tag">${esc(t)}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
 
   // ═══ PROJECTS ═══
   const workEl = document.getElementById('work-list');
-  workEl.innerHTML = projects.map((p, i) => `
+  const allowedBadges = ['b-web', 'b-ai', 'b-auto'];
+  workEl.innerHTML = projects.map((p, i) => {
+    const badgeCls = allowedBadges.includes(p.badgeClass) ? p.badgeClass : 'b-web';
+    return `
     <div class="wl-row">
       <div class="wl-idx">${String(i + 1).padStart(2, '0')}</div>
-      <div class="wl-info"><h3>${p.title}</h3><p>// ${p.tech}</p></div>
-      <span class="wl-badge ${p.badgeClass}">${p.badge}</span>
+      <div class="wl-info"><h3>${esc(p.title)}</h3><p>// ${esc(p.tech)}</p></div>
+      <span class="wl-badge ${badgeCls}">${esc(p.badge)}</span>
       <div class="wl-arr"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 17L17 7M7 7h10v10"/></svg></div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 
   // ═══ TECH GRID ═══
   const techEl = document.getElementById('tech-grid');
@@ -80,12 +102,10 @@
     'Docker': '<svg viewBox="0 0 24 24"><rect x="2" y="10" width="4" height="3" rx=".5"/><rect x="7" y="10" width="4" height="3" rx=".5"/><rect x="12" y="10" width="4" height="3" rx=".5"/><rect x="7" y="6" width="4" height="3" rx=".5"/><rect x="12" y="6" width="4" height="3" rx=".5"/><path d="M2 13c0 3 3 6 9 6s9-1.5 9-5"/></svg>',
     'Vercel': '<svg viewBox="0 0 24 24"><path d="M12 3L2 20h20z"/></svg>'
   };
-  techEl.innerHTML = techStack.map(t => `
-    <div class="t-item">
-      ${techIcons[t] || '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>'}
-      ${t}
-    </div>
-  `).join('');
+  techEl.innerHTML = techStack.map(t => {
+    const safeT = esc(t);
+    return `<div class="t-item">${techIcons[t] || '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>'}${safeT}</div>`;
+  }).join('');
 
   // ═══ CONTACT ═══
   const contactEl = document.getElementById('contact-cards');
@@ -96,9 +116,9 @@
     { label: 'Instagram', value: profile.instagram, href: profile.instagramLink, icon: `<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>` }
   ];
   contactEl.innerHTML = contacts.map(c => `
-    <a class="c-card" href="${c.href}" target="_blank" rel="noopener">
+    <a class="c-card" href="${escUrl(c.href)}" target="_blank" rel="noopener noreferrer">
       <div class="c-card-ico">${c.icon}</div>
-      <div><div class="c-card-label">${c.label}</div><div class="c-card-val">${c.value}</div></div>
+      <div><div class="c-card-label">${esc(c.label)}</div><div class="c-card-val">${esc(c.value)}</div></div>
       <span class="c-card-arr">→</span>
     </a>
   `).join('');
@@ -114,7 +134,7 @@
   const resize = () => { W = C.width = C.offsetWidth; H = C.height = C.offsetHeight; };
   resize(); window.addEventListener('resize', resize);
 
-  const pts = Array.from({length:100}, () => ({
+  const pts = Array.from({length:60}, () => ({
     x: Math.random()*1400, y: Math.random()*600,
     vx: (Math.random()-.5)*.45, vy: (Math.random()-.5)*.45,
     r: Math.random()*1.4+.25,
@@ -122,7 +142,7 @@
     a: Math.random()*.45+.1
   }));
 
-  const lines = Array.from({length:12}, () => ({
+  const lines = Array.from({length:8}, () => ({
     y: Math.random()*600, x: Math.random()*400,
     len: Math.random()*60+30, speed: Math.random()*.8+.3,
     a: Math.random()*.35+.1
@@ -133,7 +153,7 @@
     cx.clearRect(0,0,W,H); t += .006;
     [[.038,.32,'37,99,235',.05],[.026,.58,'124,58,237',.04],[.05,.72,'34,211,238',.03]].forEach(([freq,yR,col,alpha]) => {
       cx.beginPath();
-      for(let x=0;x<=W;x+=2){ const y=H*yR+Math.sin(x*freq+t)*22+Math.sin(x*freq*.5+t*.7)*14; x===0?cx.moveTo(x,y):cx.lineTo(x,y); }
+      for(let x=0;x<=W;x+=3){ const y=H*yR+Math.sin(x*freq+t)*22+Math.sin(x*freq*.5+t*.7)*14; x===0?cx.moveTo(x,y):cx.lineTo(x,y); }
       cx.strokeStyle=`rgba(${col},${alpha})`;cx.lineWidth=1.2;cx.stroke();
     });
     for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){
@@ -153,11 +173,17 @@
   }
   frame();
 
-  // ═══ CURSOR ═══
-  const outer=document.getElementById('cur-outer'),ring=document.getElementById('cur-ring'),dot=document.getElementById('cur-dot'),lbl=document.getElementById('cur-label');
-  let mx=200,my=200,rx=200,ry=200;
-  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;const el=document.elementFromPoint(mx,my);const txt=el?.closest('[data-cursor]')?.dataset.cursor||'';lbl.textContent=txt;lbl.style.opacity=txt?'1':'0'});
-  (function loop(){rx+=(mx-rx)*.13;ry+=(my-ry)*.13;outer.style.left=mx+'px';outer.style.top=my+'px';dot.style.left='0px';dot.style.top='0px';ring.style.left=(rx-mx)+'px';ring.style.top=(ry-my)+'px';requestAnimationFrame(loop)})();
+  // ═══ CURSOR (desktop only) ═══
+  if (window.matchMedia('(pointer: fine)').matches) {
+    const outer=document.getElementById('cur-outer'),ring=document.getElementById('cur-ring'),dot=document.getElementById('cur-dot'),lbl=document.getElementById('cur-label');
+    let mx=200,my=200,rx=200,ry=200;
+    document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;const el=document.elementFromPoint(mx,my);const txt=el?.closest('[data-cursor]')?.dataset.cursor||'';lbl.textContent=txt;lbl.style.opacity=txt?'1':'0'});
+    (function loop(){rx+=(mx-rx)*.13;ry+=(my-ry)*.13;outer.style.left=mx+'px';outer.style.top=my+'px';dot.style.left='0px';dot.style.top='0px';ring.style.left=(rx-mx)+'px';ring.style.top=(ry-my)+'px';requestAnimationFrame(loop)})();
+  } else {
+    // Hide custom cursor on touch devices
+    document.getElementById('cur-outer').style.display = 'none';
+    document.body.style.cursor = 'auto';
+  }
 
   // ═══ SCROLL REVEAL ═══
   const obs = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in') }), {threshold:.1});
@@ -165,9 +191,26 @@
 
   // ═══ NAV ACTIVE STATE ═══
   document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', function(e) {
+    link.addEventListener('click', function() {
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
       this.classList.add('active');
     });
   });
+
+  // ═══ MOBILE NAV TOGGLE ═══
+  const navToggle = document.getElementById('nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  if (navToggle) {
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+      navToggle.classList.toggle('open');
+    });
+    // Close on link click
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+        navToggle.classList.remove('open');
+      });
+    });
+  }
 })();

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MotionMind — Admin Panel</title>
+<meta name="robots" content="noindex, nofollow">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,700;1,300&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -13,14 +14,30 @@
   --g1:linear-gradient(135deg,#2563EB,#7C3AED);
   --text:#eef2ff;--muted:#5b6898;--dim:#151530;
   --border:rgba(37,99,235,.12);
-  --danger:#ef4444;
-  --success:#4ade80;
+  --danger:#ef4444;--success:#4ade80;
 }
 html{font-size:14px;scroll-behavior:smooth}
 body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh}
 
+/* ══ LOGIN SCREEN ══ */
+.login-screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--b0);z-index:10000}
+.login-screen.hidden{display:none}
+.login-box{background:var(--b1);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.login-box h2{font-size:1.4rem;font-weight:900;margin-bottom:6px}
+.login-box p{font-size:.78rem;color:var(--muted);margin-bottom:24px}
+.login-logo{width:48px;height:48px;border-radius:12px;background:var(--g1);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;color:#fff;margin:0 auto 16px;box-shadow:0 6px 20px rgba(37,99,235,.4)}
+.login-input{width:100%;background:var(--b2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.82rem;outline:none;transition:border-color .2s;margin-bottom:12px}
+.login-input:focus{border-color:rgba(37,99,235,.5)}
+.login-input[type="password"]{letter-spacing:2px}
+.login-btn{width:100%;padding:12px;border-radius:10px;background:var(--g1);color:#fff;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s;margin-top:4px}
+.login-btn:hover{box-shadow:0 8px 24px rgba(37,99,235,.4);transform:translateY(-1px)}
+.login-error{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--danger);margin-top:10px;display:none}
+.login-error.show{display:block}
+.login-hint{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:16px;opacity:.6}
+
 /* ══ LAYOUT ══ */
 .admin-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.admin-layout.locked{display:none}
 
 /* ══ SIDEBAR ══ */
 .sidebar{background:var(--b1);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
@@ -28,39 +45,33 @@ body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;min-he
 .sidebar-logo-ico{width:32px;height:32px;border-radius:8px;background:var(--g1);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.7rem;color:#fff}
 .sidebar-logo span{font-weight:800;font-size:.95rem}
 .sidebar-logo em{font-style:normal;font-size:.6rem;color:var(--muted);display:block;font-family:'JetBrains Mono',monospace}
-
 .sidebar-nav{display:flex;flex-direction:column;gap:2px;padding:0 10px}
 .sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-size:.82rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;text-decoration:none;border:none;background:none;width:100%;text-align:left}
 .sidebar-link:hover{color:var(--text);background:rgba(37,99,235,.06)}
 .sidebar-link.active{color:var(--text);background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.15)}
 .sidebar-link svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0}
-
 .sidebar-divider{height:1px;background:var(--border);margin:16px 10px}
-
 .sidebar-back{display:flex;align-items:center;gap:8px;padding:10px 14px;margin:0 10px;border-radius:8px;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;text-decoration:none;font-family:'JetBrains Mono',monospace}
 .sidebar-back:hover{color:var(--cyan);background:rgba(34,211,238,.06)}
+.sidebar-logout{display:flex;align-items:center;gap:8px;padding:10px 14px;margin:8px 10px 0;border-radius:8px;font-size:.75rem;color:var(--danger);cursor:pointer;transition:all .2s;text-decoration:none;font-family:'JetBrains Mono',monospace;border:none;background:none;width:calc(100% - 20px)}
+.sidebar-logout:hover{background:rgba(239,68,68,.06)}
 
 /* ══ MAIN CONTENT ══ */
 .admin-main{padding:32px 40px;overflow-y:auto}
-.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
 .admin-header h1{font-size:1.6rem;font-weight:900;letter-spacing:-1px}
-.admin-header-actions{display:flex;gap:10px}
+.admin-header-actions{display:flex;gap:10px;flex-wrap:wrap}
 
 /* ══ CARDS ══ */
 .admin-card{background:var(--b1);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px}
 .admin-card h3{font-size:1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.admin-card h3 .card-badge{font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:2px 8px;border-radius:4px;background:rgba(37,99,235,.08);color:var(--cyan);border:1px solid rgba(37,99,235,.18)}
 
 /* ══ FORM ══ */
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .form-row.full{grid-template-columns:1fr}
 .form-group{display:flex;flex-direction:column;gap:6px}
 .form-group label{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.form-group input,.form-group textarea,.form-group select{
-  background:var(--b2);border:1px solid var(--border);border-radius:8px;
-  padding:10px 14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.78rem;
-  transition:border-color .2s;outline:none;resize:vertical;
-}
+.form-group input,.form-group textarea,.form-group select{background:var(--b2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.78rem;transition:border-color .2s;outline:none;resize:vertical}
 .form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:rgba(37,99,235,.5)}
 .form-group textarea{min-height:80px}
 .form-group select{cursor:pointer}
@@ -74,8 +85,6 @@ body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;min-he
 .btn-danger:hover{background:rgba(239,68,68,.2)}
 .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
 .btn-ghost:hover{border-color:rgba(37,99,235,.3);color:var(--text)}
-.btn-success{background:rgba(74,222,128,.1);color:var(--success);border:1px solid rgba(74,222,128,.2)}
-.btn-success:hover{background:rgba(74,222,128,.2)}
 
 /* ══ TABLE ══ */
 .admin-table{width:100%;border-collapse:collapse}
@@ -108,20 +117,49 @@ body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;min-he
 .tab-content{display:none}
 .tab-content.active{display:block}
 
-/* ══ EMPTY STATE ══ */
-.empty-state{text-align:center;padding:40px;color:var(--muted)}
-.empty-state svg{width:48px;height:48px;stroke:var(--muted);margin-bottom:12px;opacity:.4}
-.empty-state p{font-size:.82rem;margin-top:8px}
-
 /* ══ MODAL ══ */
-.modal-overlay{position:fixed;inset:0;background:rgba(2,2,10,.85);z-index:9000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+.modal-overlay{position:fixed;inset:0;background:rgba(2,2,10,.85);z-index:9000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:20px}
 .modal-overlay.show{display:flex}
 .modal{background:var(--b1);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto}
 .modal h3{font-size:1.1rem;font-weight:800;margin-bottom:20px}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+/* ══ MOBILE SIDEBAR ══ */
+.mobile-menu-btn{display:none;position:fixed;top:12px;left:12px;z-index:700;width:40px;height:40px;border-radius:8px;background:var(--b1);border:1px solid var(--border);align-items:center;justify-content:center;cursor:pointer}
+.mobile-menu-btn svg{stroke:var(--text);width:20px;height:20px;fill:none;stroke-width:2}
+
+/* ══ RESPONSIVE ADMIN ══ */
+@media(max-width:768px){
+  .admin-layout{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:-260px;top:0;bottom:0;width:240px;z-index:600;transition:left .3s;box-shadow:4px 0 20px rgba(0,0,0,.5)}
+  .sidebar.open{left:0}
+  .mobile-menu-btn{display:flex}
+  .admin-main{padding:20px 16px;padding-top:60px}
+  .admin-header{flex-direction:column;align-items:flex-start}
+  .form-row{grid-template-columns:1fr}
+  .admin-table{font-size:.72rem}
+  .admin-table th,.admin-table td{padding:8px 10px}
+  .login-box{padding:28px 20px;margin:16px}
+  .modal{margin:16px;padding:20px}
+}
 </style>
 </head>
 <body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">MM</div>
+    <h2>Admin Panel</h2>
+    <p>Masukkan password untuk akses admin panel</p>
+    <form onsubmit="attemptLogin(event)">
+      <input type="password" class="login-input" id="login-password" placeholder="Password" autocomplete="current-password" autofocus>
+      <button type="submit" class="login-btn">Login</button>
+    </form>
+    <div class="login-error" id="login-error">Password salah. Coba lagi.</div>
+    <div class="login-hint">Default: motionmind2025</div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -130,9 +168,14 @@ body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;min-he
   <div class="modal" id="modal-content"></div>
 </div>
 
-<div class="admin-layout">
+<!-- MOBILE MENU BTN -->
+<button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleSidebar()">
+  <svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+</button>
+
+<div class="admin-layout locked" id="admin-layout">
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <div class="sidebar-logo-ico">MM</div>
       <div><span>MotionMind</span><em>Admin Panel</em></div>
@@ -161,22 +204,23 @@ body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;min-he
     </nav>
     <div class="sidebar-divider"></div>
     <a class="sidebar-back" href="index.html">← Back to Portfolio</a>
+    <button class="sidebar-logout" onclick="logout()">⏻ Logout</button>
   </aside>
 
   <!-- MAIN -->
   <main class="admin-main">
 
-    <!-- ═══ DASHBOARD TAB ═══ -->
+    <!-- DASHBOARD TAB -->
     <div class="tab-content active" id="tab-dashboard">
       <div class="admin-header">
         <h1>Dashboard</h1>
         <div class="admin-header-actions">
-          <button class="btn btn-ghost" onclick="exportData()">↓ Export Data</button>
-          <button class="btn btn-primary" onclick="document.getElementById('import-input').click()">↑ Import Data</button>
+          <button class="btn btn-ghost" onclick="exportData()">↓ Export</button>
+          <button class="btn btn-primary" onclick="document.getElementById('import-input').click()">↑ Import</button>
           <input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(event)">
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px" id="dashboard-stats"></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:24px" id="dashboard-stats"></div>
       <div class="admin-card">
         <h3>Quick Actions</h3>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -188,7 +232,7 @@ body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;min-he
       </div>
     </div>
 
-    <!-- ═══ PROFILE TAB ═══ -->
+    <!-- PROFILE TAB -->
     <div class="tab-content" id="tab-profile">
       <div class="admin-header"><h1>Profile Settings</h1></div>
       <form id="profile-form" onsubmit="saveProfile(event)">
@@ -244,13 +288,13 @@ body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;min-he
       </form>
     </div>
 
-    <!-- ═══ PROJECTS TAB ═══ -->
+    <!-- PROJECTS TAB -->
     <div class="tab-content" id="tab-projects">
       <div class="admin-header">
         <h1>Projects</h1>
         <button class="btn btn-primary" onclick="openProjectModal()">+ Add Project</button>
       </div>
-      <div class="admin-card">
+      <div class="admin-card" style="overflow-x:auto">
         <table class="admin-table">
           <thead><tr><th>#</th><th>Title</th><th>Tech</th><th>Badge</th><th>Actions</th></tr></thead>
           <tbody id="projects-tbody"></tbody>
@@ -258,13 +302,13 @@ body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;min-he
       </div>
     </div>
 
-    <!-- ═══ SERVICES TAB ═══ -->
+    <!-- SERVICES TAB -->
     <div class="tab-content" id="tab-services">
       <div class="admin-header">
         <h1>Services</h1>
         <button class="btn btn-primary" onclick="openServiceModal()">+ Add Service</button>
       </div>
-      <div class="admin-card">
+      <div class="admin-card" style="overflow-x:auto">
         <table class="admin-table">
           <thead><tr><th>#</th><th>Title</th><th>Description</th><th>Tags</th><th>Actions</th></tr></thead>
           <tbody id="services-tbody"></tbody>
@@ -272,9 +316,17 @@ body{background:var(--b0);color:var(--text);font-family:'Syne',sans-serif;min-he
       </div>
     </div>
 
-    <!-- ═══ SETTINGS TAB ═══ -->
+    <!-- SETTINGS TAB -->
     <div class="tab-content" id="tab-settings">
       <div class="admin-header"><h1>Settings</h1></div>
+      <div class="admin-card">
+        <h3>Change Password</h3>
+        <div class="form-row">
+          <div class="form-group"><label>New Password</label><input type="password" id="st-new-password" placeholder="Min 6 characters"></div>
+          <div class="form-group"><label>Confirm Password</label><input type="password" id="st-confirm-password"></div>
+        </div>
+        <button class="btn btn-primary" onclick="changePassword()" style="margin-top:10px">Update Password</button>
+      </div>
       <div class="admin-card">
         <h3>Marquee Texts</h3>
         <div class="form-row full">

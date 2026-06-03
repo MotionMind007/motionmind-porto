@@ -1,7 +1,115 @@
 // ══ MOTIONMIND ADMIN PANEL ══
 
+// ═══ AUTH SYSTEM ═══
+const AUTH_KEY = 'motionmind_auth';
+const PASS_KEY = 'motionmind_admin_pass';
+const SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours
+
+// Hash password (simple but effective for client-side)
+function hashPassword(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return 'mm_' + Math.abs(hash).toString(36) + '_' + str.length;
+}
+
+function getStoredHash() {
+  return localStorage.getItem(PASS_KEY) || hashPassword('motionmind2025');
+}
+
+function isLoggedIn() {
+  const session = localStorage.getItem(AUTH_KEY);
+  if (!session) return false;
+  try {
+    const data = JSON.parse(session);
+    if (Date.now() - data.timestamp > SESSION_DURATION) {
+      localStorage.removeItem(AUTH_KEY);
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function attemptLogin(e) {
+  e.preventDefault();
+  const input = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+
+  if (!input) {
+    errorEl.textContent = 'Password tidak boleh kosong';
+    errorEl.classList.add('show');
+    return;
+  }
+
+  if (hashPassword(input) === getStoredHash()) {
+    localStorage.setItem(AUTH_KEY, JSON.stringify({ timestamp: Date.now() }));
+    showAdmin();
+    errorEl.classList.remove('show');
+  } else {
+    errorEl.textContent = 'Password salah. Coba lagi.';
+    errorEl.classList.add('show');
+    document.getElementById('login-password').value = '';
+    document.getElementById('login-password').focus();
+  }
+}
+
+function logout() {
+  localStorage.removeItem(AUTH_KEY);
+  location.reload();
+}
+
+function showAdmin() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('admin-layout').classList.remove('locked');
+  initAdmin();
+}
+
+function changePassword() {
+  const newPass = document.getElementById('st-new-password').value;
+  const confirmPass = document.getElementById('st-confirm-password').value;
+
+  if (newPass.length < 6) {
+    showToast('Password minimal 6 karakter', 'error');
+    return;
+  }
+  if (newPass !== confirmPass) {
+    showToast('Password tidak cocok', 'error');
+    return;
+  }
+
+  localStorage.setItem(PASS_KEY, hashPassword(newPass));
+  document.getElementById('st-new-password').value = '';
+  document.getElementById('st-confirm-password').value = '';
+  showToast('Password berhasil diubah!');
+}
+
+// ═══ MOBILE SIDEBAR ═══
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// Close sidebar on outside click (mobile)
+document.addEventListener('click', (e) => {
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('mobile-menu-btn');
+  if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && !btn.contains(e.target)) {
+    sidebar.classList.remove('open');
+  }
+});
+
 // ═══ INITIALIZATION ═══
 document.addEventListener('DOMContentLoaded', () => {
+  if (isLoggedIn()) {
+    showAdmin();
+  }
+});
+
+function initAdmin() {
   renderDashboard();
   loadProfile();
   renderProjects();
@@ -10,16 +118,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Tab navigation
   document.querySelectorAll('.sidebar-link[data-tab]').forEach(link => {
-    link.addEventListener('click', () => switchTab(link.dataset.tab));
+    link.addEventListener('click', () => {
+      switchTab(link.dataset.tab);
+      // Close sidebar on mobile
+      document.getElementById('sidebar').classList.remove('open');
+    });
   });
-});
+}
 
 // ═══ TAB SWITCHING ═══
 function switchTab(tabName) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
   document.getElementById(`tab-${tabName}`).classList.add('active');
-  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+  const sidebarLink = document.querySelector(`[data-tab="${tabName}"]`);
+  if (sidebarLink) sidebarLink.classList.add('active');
 }
 
 // ═══ TOAST ═══
@@ -44,6 +157,14 @@ document.getElementById('modal-overlay').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeModal();
 });
 
+// ═══ HTML ESCAPE (for safe rendering in admin) ═══
+function esc(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = String(str);
+  return div.innerHTML;
+}
+
 // ═══ DASHBOARD ═══
 function renderDashboard() {
   const data = DataManager.getAll();
@@ -56,8 +177,8 @@ function renderDashboard() {
   ];
   statsEl.innerHTML = stats.map(s => `
     <div style="background:var(--b1);border:1px solid var(--border);border-radius:12px;padding:18px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">${s.label}</div>
-      <div style="font-size:1.5rem;font-weight:900">${s.value}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">${esc(s.label)}</div>
+      <div style="font-size:1.5rem;font-weight:900">${esc(String(s.value))}</div>
     </div>
   `).join('');
 }
@@ -90,28 +211,28 @@ function loadProfile() {
 function saveProfile(e) {
   e.preventDefault();
   const profile = {
-    name: document.getElementById('pf-name').value,
-    location: document.getElementById('pf-location').value,
-    description: document.getElementById('pf-description').value,
-    timezone: document.getElementById('pf-timezone').value,
+    name: document.getElementById('pf-name').value.trim(),
+    location: document.getElementById('pf-location').value.trim(),
+    description: document.getElementById('pf-description').value.trim(),
+    timezone: document.getElementById('pf-timezone').value.trim(),
     specialties: document.getElementById('pf-specialties').value.split(',').map(s => s.trim()).filter(Boolean),
     available: document.getElementById('pf-available').classList.contains('on'),
-    email: document.getElementById('pf-email').value,
-    whatsapp: document.getElementById('pf-whatsapp').value,
-    whatsappLink: document.getElementById('pf-whatsappLink').value,
-    github: document.getElementById('pf-github').value,
-    githubLink: document.getElementById('pf-githubLink').value,
-    instagram: document.getElementById('pf-instagram').value,
-    instagramLink: document.getElementById('pf-instagramLink').value,
+    email: document.getElementById('pf-email').value.trim(),
+    whatsapp: document.getElementById('pf-whatsapp').value.trim(),
+    whatsappLink: document.getElementById('pf-whatsappLink').value.trim(),
+    github: document.getElementById('pf-github').value.trim(),
+    githubLink: document.getElementById('pf-githubLink').value.trim(),
+    instagram: document.getElementById('pf-instagram').value.trim(),
+    instagramLink: document.getElementById('pf-instagramLink').value.trim(),
     stats: {
-      projects: document.getElementById('pf-stat-projects').value,
-      automations: document.getElementById('pf-stat-automations').value,
-      years: document.getElementById('pf-stat-years').value,
-      committed: document.getElementById('pf-stat-committed').value
+      projects: document.getElementById('pf-stat-projects').value.trim(),
+      automations: document.getElementById('pf-stat-automations').value.trim(),
+      years: document.getElementById('pf-stat-years').value.trim(),
+      committed: document.getElementById('pf-stat-committed').value.trim()
     }
   };
   DataManager.saveProfile(profile);
-  showToast('Profile saved successfully!');
+  showToast('Profile saved!');
   renderDashboard();
 }
 
@@ -120,18 +241,18 @@ function renderProjects() {
   const projects = DataManager.getProjects();
   const tbody = document.getElementById('projects-tbody');
   if (projects.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">No projects yet. Add your first project!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">No projects yet</td></tr>`;
     return;
   }
   tbody.innerHTML = projects.map((p, i) => `
     <tr>
       <td style="font-family:'JetBrains Mono',monospace;color:var(--muted)">${String(i+1).padStart(2,'0')}</td>
-      <td style="font-weight:600">${p.title}</td>
-      <td style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted)">${p.tech}</td>
-      <td><span class="badge badge-${p.badgeClass?.replace('b-','')}">${p.badge}</span></td>
+      <td style="font-weight:600">${esc(p.title)}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--muted)">${esc(p.tech)}</td>
+      <td><span class="badge badge-${(p.badgeClass||'').replace('b-','')}">${esc(p.badge)}</span></td>
       <td class="actions">
         <button class="btn btn-ghost" onclick="editProject(${p.id})" style="padding:5px 10px;font-size:.7rem">Edit</button>
-        <button class="btn btn-danger" onclick="deleteProject(${p.id})" style="padding:5px 10px;font-size:.7rem">Delete</button>
+        <button class="btn btn-danger" onclick="deleteProject(${p.id})" style="padding:5px 10px;font-size:.7rem">Del</button>
       </td>
     </tr>
   `).join('');
@@ -142,13 +263,13 @@ function openProjectModal(project = null) {
   openModal(`
     <h3>${isEdit ? 'Edit' : 'Add'} Project</h3>
     <div class="form-row full">
-      <div class="form-group"><label>Title</label><input type="text" id="modal-proj-title" value="${isEdit ? project.title : ''}"></div>
+      <div class="form-group"><label>Title</label><input type="text" id="modal-proj-title" value="${isEdit ? esc(project.title) : ''}"></div>
     </div>
     <div class="form-row full">
-      <div class="form-group"><label>Technologies</label><input type="text" id="modal-proj-tech" value="${isEdit ? project.tech : ''}" placeholder="next.js · supabase · websockets"></div>
+      <div class="form-group"><label>Technologies</label><input type="text" id="modal-proj-tech" value="${isEdit ? esc(project.tech) : ''}" placeholder="next.js · supabase · websockets"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Badge Text</label><input type="text" id="modal-proj-badge" value="${isEdit ? project.badge : ''}" placeholder="Web App"></div>
+      <div class="form-group"><label>Badge Text</label><input type="text" id="modal-proj-badge" value="${isEdit ? esc(project.badge) : ''}" placeholder="Web App"></div>
       <div class="form-group">
         <label>Badge Style</label>
         <select id="modal-proj-badgeClass">
@@ -160,7 +281,7 @@ function openProjectModal(project = null) {
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveProjectFromModal(${isEdit ? project.id : 'null'})">${isEdit ? 'Update' : 'Add'} Project</button>
+      <button class="btn btn-primary" onclick="saveProjectFromModal(${isEdit ? project.id : 'null'})">${isEdit ? 'Update' : 'Add'}</button>
     </div>
   `);
 }
@@ -171,7 +292,7 @@ function saveProjectFromModal(existingId) {
   const badge = document.getElementById('modal-proj-badge').value.trim();
   const badgeClass = document.getElementById('modal-proj-badgeClass').value;
 
-  if (!title) { showToast('Title is required', 'error'); return; }
+  if (!title) { showToast('Title required', 'error'); return; }
 
   if (existingId) {
     const data = DataManager.getAll();
@@ -209,18 +330,18 @@ function renderServices() {
   const services = DataManager.getServices();
   const tbody = document.getElementById('services-tbody');
   if (services.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">No services yet. Add your first service!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">No services yet</td></tr>`;
     return;
   }
   tbody.innerHTML = services.map((s, i) => `
     <tr>
-      <td style="font-family:'JetBrains Mono',monospace;color:var(--muted)">${s.number || String(i+1).padStart(2,'0')}</td>
-      <td style="font-weight:600">${s.title}</td>
-      <td style="font-size:.75rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.description}</td>
-      <td style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--violet)">${s.tags.slice(0,3).join(', ')}${s.tags.length > 3 ? '...' : ''}</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--muted)">${esc(s.number) || String(i+1).padStart(2,'0')}</td>
+      <td style="font-weight:600">${esc(s.title)}</td>
+      <td style="font-size:.75rem;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.description)}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--violet)">${(s.tags||[]).slice(0,3).map(t=>esc(t)).join(', ')}</td>
       <td class="actions">
         <button class="btn btn-ghost" onclick="editService(${s.id})" style="padding:5px 10px;font-size:.7rem">Edit</button>
-        <button class="btn btn-danger" onclick="deleteService(${s.id})" style="padding:5px 10px;font-size:.7rem">Delete</button>
+        <button class="btn btn-danger" onclick="deleteService(${s.id})" style="padding:5px 10px;font-size:.7rem">Del</button>
       </td>
     </tr>
   `).join('');
@@ -231,21 +352,21 @@ function openServiceModal(service = null) {
   openModal(`
     <h3>${isEdit ? 'Edit' : 'Add'} Service</h3>
     <div class="form-row">
-      <div class="form-group"><label>Number</label><input type="text" id="modal-svc-number" value="${isEdit ? service.number : ''}" placeholder="01"></div>
-      <div class="form-group"><label>Title</label><input type="text" id="modal-svc-title" value="${isEdit ? service.title : ''}"></div>
+      <div class="form-group"><label>Number</label><input type="text" id="modal-svc-number" value="${isEdit ? esc(service.number) : ''}" placeholder="01"></div>
+      <div class="form-group"><label>Title</label><input type="text" id="modal-svc-title" value="${isEdit ? esc(service.title) : ''}"></div>
     </div>
     <div class="form-row full">
-      <div class="form-group"><label>Description</label><textarea id="modal-svc-description">${isEdit ? service.description : ''}</textarea></div>
+      <div class="form-group"><label>Description</label><textarea id="modal-svc-description">${isEdit ? esc(service.description) : ''}</textarea></div>
     </div>
     <div class="form-row full">
-      <div class="form-group"><label>Tags (comma separated)</label><input type="text" id="modal-svc-tags" value="${isEdit ? service.tags.join(', ') : ''}" placeholder="React, Next.js, Tailwind"></div>
+      <div class="form-group"><label>Tags (comma separated)</label><input type="text" id="modal-svc-tags" value="${isEdit ? (service.tags||[]).join(', ') : ''}"></div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label>Grid Span</label>
         <select id="modal-svc-span">
-          <option value="7" ${isEdit && service.span === 7 ? 'selected' : ''}>Large (7 columns)</option>
-          <option value="5" ${isEdit && service.span === 5 ? 'selected' : ''}>Small (5 columns)</option>
+          <option value="7" ${isEdit && service.span === 7 ? 'selected' : ''}>Large (7)</option>
+          <option value="5" ${isEdit && service.span === 5 ? 'selected' : ''}>Small (5)</option>
         </select>
       </div>
       <div class="form-group">
@@ -258,7 +379,7 @@ function openServiceModal(service = null) {
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveServiceFromModal(${isEdit ? service.id : 'null'})">${isEdit ? 'Update' : 'Add'} Service</button>
+      <button class="btn btn-primary" onclick="saveServiceFromModal(${isEdit ? service.id : 'null'})">${isEdit ? 'Update' : 'Add'}</button>
     </div>
   `);
 }
@@ -271,7 +392,7 @@ function saveServiceFromModal(existingId) {
   const span = parseInt(document.getElementById('modal-svc-span').value);
   const iconColor = document.getElementById('modal-svc-color').value;
 
-  if (!title) { showToast('Title is required', 'error'); return; }
+  if (!title) { showToast('Title required', 'error'); return; }
 
   if (existingId) {
     const data = DataManager.getAll();
@@ -317,7 +438,7 @@ function saveSettings() {
   data.marquee1 = document.getElementById('st-marquee1').value.split(',').map(s => s.trim()).filter(Boolean);
   data.marquee2 = document.getElementById('st-marquee2').value.split(',').map(s => s.trim()).filter(Boolean);
   DataManager.saveAll(data);
-  showToast('Marquee settings saved!');
+  showToast('Marquee saved!');
 }
 
 function saveTechStack() {
@@ -334,7 +455,7 @@ function exportData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `motionmind-data-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `motionmind-backup-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
   showToast('Data exported!');
@@ -349,23 +470,24 @@ function importData(event) {
       const data = JSON.parse(e.target.result);
       if (data.profile && data.projects && data.services) {
         DataManager.saveAll(data);
-        showToast('Data imported successfully!');
+        showToast('Data imported!');
         setTimeout(() => location.reload(), 500);
       } else {
-        showToast('Invalid data format', 'error');
+        showToast('Invalid format', 'error');
       }
-    } catch (err) {
-      showToast('Failed to parse JSON file', 'error');
+    } catch {
+      showToast('Invalid JSON file', 'error');
     }
   };
   reader.readAsText(file);
+  event.target.value = '';
 }
 
 // ═══ RESET ═══
 function confirmReset() {
-  if (confirm('Are you sure? This will reset ALL data to defaults and cannot be undone.')) {
+  if (confirm('Reset ALL data to defaults? Cannot be undone.')) {
     DataManager.reset();
-    showToast('Data reset to defaults!');
+    showToast('Data reset!');
     setTimeout(() => location.reload(), 500);
   }
 }
