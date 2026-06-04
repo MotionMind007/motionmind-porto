@@ -71,7 +71,25 @@ export const DataManager = {
   getAll() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) return JSON.parse(stored)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        // Merge with defaults to ensure new fields exist
+        return {
+          ...DEFAULTS,
+          ...parsed,
+          profile: { ...DEFAULTS.profile, ...parsed.profile },
+          projects: (parsed.projects || DEFAULTS.projects).map((p, i) => ({
+            ...DEFAULTS.projects[i],
+            ...p,
+            status: p.status || 'finished',
+            link: p.link || '',
+            thumbnail: p.thumbnail || '',
+          })),
+          services: parsed.services || DEFAULTS.services,
+          techStack: parsed.techStack || DEFAULTS.techStack,
+          marqueeItems: parsed.marqueeItems || DEFAULTS.marqueeItems,
+        }
+      }
     } catch { /* fallback to defaults */ }
     return DEFAULTS
   },

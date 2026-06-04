@@ -28,7 +28,7 @@ export default function Navbar() {
     >
       <div className="max-w-6xl mx-auto flex items-center justify-between">
         <a href="#" className="flex items-center gap-3 group">
-          <img src="/logo.png" alt="MotionMind" className="h-8 w-auto group-hover:scale-110 transition-transform" />
+          <img src="/logo.png?v=2" alt="MotionMind" className="h-8 w-auto group-hover:scale-110 transition-transform" />
           <span className="font-heading font-bold text-sm tracking-tight">
             Motion<span className="text-brand-blue">Mind</span>
           </span>

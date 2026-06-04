@@ -66,15 +66,21 @@ export default function Work() {
             return (
               <motion.a
                 key={p.id || i}
-                href={p.link || '#contact'}
-                target={p.link ? '_blank' : '_self'}
-                rel="noopener noreferrer"
+                href={p.link || undefined}
+                target={p.link ? '_blank' : undefined}
+                rel={p.link ? 'noopener noreferrer' : undefined}
+                onClick={(e) => {
+                  if (!p.link) {
+                    e.preventDefault()
+                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+                  }
+                }}
                 initial={{ opacity: 0, x: 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.08 }}
                 whileHover={{ y: -4 }}
-                className="group glass gradient-border rounded-xl overflow-hidden cursor-pointer transition-all hover:border-white/10 flex-shrink-0 w-[260px] sm:w-[280px] snap-start"
+                className="group glass gradient-border rounded-xl overflow-hidden cursor-pointer transition-all hover:border-white/10 flex-shrink-0 w-[260px] sm:w-[280px] snap-start touch-manipulation"
               >
                 {/* Thumbnail */}
                 <div className="relative h-32 overflow-hidden bg-dark-200">
