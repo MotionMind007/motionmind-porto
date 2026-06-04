@@ -141,7 +141,7 @@ function ProfileTab({ data, save }) {
 // ══ PROJECTS TAB ══
 function ProjectsTab({ data, save }) {
   const [list, setList] = useState(data.projects)
-  const add = () => setList([...list, { id: Date.now(), title: '', tech: '', badge: 'Web App', color: 'blue' }])
+  const add = () => setList([...list, { id: Date.now(), title: '', tech: '', badge: 'Web App', color: 'blue', status: 'development', link: '', thumbnail: '' }])
   const remove = (id) => setList(list.filter(p => p.id !== id))
   const update = (id, k, v) => setList(list.map(p => p.id === id ? { ...p, [k]: v } : p))
   const submit = () => save({ ...data, projects: list })
@@ -158,9 +158,14 @@ function ProjectsTab({ data, save }) {
             <Field label="Title" value={p.title} onChange={v => update(p.id, 'title', v)} small />
             <Field label="Tech" value={p.tech} onChange={v => update(p.id, 'tech', v)} small />
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid sm:grid-cols-2 gap-3">
+            <Field label="Link (URL)" value={p.link} onChange={v => update(p.id, 'link', v)} small />
+            <Field label="Thumbnail URL" value={p.thumbnail} onChange={v => update(p.id, 'thumbnail', v)} small />
+          </div>
+          <div className="grid grid-cols-4 gap-3">
             <Field label="Badge" value={p.badge} onChange={v => update(p.id, 'badge', v)} small />
             <Select label="Color" value={p.color} onChange={v => update(p.id, 'color', v)} options={['blue','purple','cyan','green']} />
+            <Select label="Status" value={p.status} onChange={v => update(p.id, 'status', v)} options={['finished','demo','development']} />
             <div className="flex items-end"><button onClick={() => remove(p.id)} className="p-2 rounded-lg hover:bg-red-500/10 text-red-400 transition-colors"><Trash2 size={14} /></button></div>
           </div>
         </div>
