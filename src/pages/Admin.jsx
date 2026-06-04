@@ -146,6 +146,14 @@ function ProjectsTab({ data, save }) {
   const update = (id, k, v) => setList(list.map(p => p.id === id ? { ...p, [k]: v } : p))
   const submit = () => save({ ...data, projects: list })
 
+  const handleThumbnail = (id, file) => {
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) { alert('Max 2MB'); return }
+    const reader = new FileReader()
+    reader.onload = (e) => update(id, 'thumbnail', e.target.result)
+    reader.readAsDataURL(file)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -160,7 +168,17 @@ function ProjectsTab({ data, save }) {
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
             <Field label="Link (URL)" value={p.link} onChange={v => update(p.id, 'link', v)} small />
-            <Field label="Thumbnail URL" value={p.thumbnail} onChange={v => update(p.id, 'thumbnail', v)} small />
+            <div>
+              <label className="block font-mono text-[10px] text-slate-500 uppercase tracking-wider mb-1.5">Thumbnail</label>
+              <div className="flex items-center gap-3">
+                {p.thumbnail && <img src={p.thumbnail} alt="thumb" className="w-16 h-10 rounded object-cover border border-white/10" />}
+                <label className="px-3 py-2 rounded-lg bg-dark-50 border border-white/10 font-mono text-xs text-slate-400 hover:text-white hover:border-brand-blue/40 transition-colors cursor-pointer">
+                  {p.thumbnail ? 'Change' : 'Upload'}
+                  <input type="file" accept="image/*" className="hidden" onChange={e => handleThumbnail(p.id, e.target.files[0])} />
+                </label>
+                {p.thumbnail && <button onClick={() => update(p.id, 'thumbnail', '')} className="font-mono text-[10px] text-red-400 hover:text-red-300">Remove</button>}
+              </div>
+            </div>
           </div>
           <div className="grid grid-cols-4 gap-3">
             <Field label="Badge" value={p.badge} onChange={v => update(p.id, 'badge', v)} small />
