@@ -65,6 +65,7 @@ const DEFAULTS = {
 }
 
 const STORAGE_KEY = 'motionmind_data'
+const DATA_VERSION = 2 // increment this to force reset on old data
 
 // ══ DATA MANAGER ══
 export const DataManager = {
@@ -73,28 +74,18 @@ export const DataManager = {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
         const parsed = JSON.parse(stored)
-        // Merge with defaults to ensure new fields exist
-        return {
-          ...DEFAULTS,
-          ...parsed,
-          profile: { ...DEFAULTS.profile, ...parsed.profile },
-          projects: (parsed.projects || DEFAULTS.projects).map((p, i) => ({
-            ...DEFAULTS.projects[i],
-            ...p,
-            status: p.status || 'finished',
-            link: p.link || '',
-            thumbnail: p.thumbnail || '',
-          })),
-          services: parsed.services || DEFAULTS.services,
-          techStack: parsed.techStack || DEFAULTS.techStack,
-          marqueeItems: parsed.marqueeItems || DEFAULTS.marqueeItems,
+        // Auto-reset if data version is outdated
+        if (!parsed._version || parsed._version < DATA_VERSION) {
+          this.reset()
+          return { ...DEFAULTS, _version: DATA_VERSION }
         }
+        return parsed
       }
     } catch { /* fallback to defaults */ }
-    return DEFAULTS
+    return { ...DEFAULTS, _version: DATA_VERSION }
   },
   saveAll(data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, _version: DATA_VERSION }))
   },
   reset() {
     localStorage.removeItem(STORAGE_KEY)
