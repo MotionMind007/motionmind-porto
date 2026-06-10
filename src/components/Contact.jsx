@@ -2,12 +2,22 @@ import { motion } from 'framer-motion'
 import { Mail, MessageCircle, Github, Instagram } from 'lucide-react'
 import { getData } from '../data'
 
+// TikTok icon (custom SVG — Lucide doesn't have TikTok)
+function TikTokIcon({ size = 20, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+    </svg>
+  )
+}
+
 function getContacts(profile) {
   return [
     { label: 'Email', value: 'motionmind007', href: `mailto:${profile.email}`, Icon: Mail, color: 'text-brand-blue', hover: 'hover:border-brand-blue/30 group-hover:text-brand-blue' },
     { label: 'WhatsApp', value: profile.whatsapp, href: profile.whatsappLink, Icon: MessageCircle, color: 'text-brand-green', hover: 'hover:border-brand-green/30 group-hover:text-brand-green' },
     { label: 'GitHub', value: profile.github, href: profile.githubLink, Icon: Github, color: 'text-brand-purple', hover: 'hover:border-brand-purple/30 group-hover:text-brand-purple' },
     { label: 'Instagram', value: profile.instagram, href: profile.instagramLink, Icon: Instagram, color: 'text-brand-pink', hover: 'hover:border-brand-pink/30 group-hover:text-brand-pink' },
+    { label: 'TikTok', value: '@motionmind.id', href: 'https://www.tiktok.com/@motionmind.id', Icon: TikTokIcon, color: 'text-cyan-400', hover: 'hover:border-cyan-400/30 group-hover:text-cyan-400' },
   ]
 }
 
@@ -30,7 +40,7 @@ export default function Contact() {
           <p className="font-mono text-xs text-slate-500 mt-4">Open for freelance, consulting, and full-time opportunities.</p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-3xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 max-w-4xl mx-auto">
           {contacts.map((c, i) => (
             <motion.a
               key={c.label}
